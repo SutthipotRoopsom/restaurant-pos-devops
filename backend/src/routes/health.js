@@ -1,13 +1,19 @@
-const router = require("express").Router();
-const db = require("../db");
+/**
+ * health.js
+ * =========
+ * health check endpoint
+ * ใช้ตรวจว่า server ยังรันอยู่ไหม
+ */
 
-router.get("/", async (req, res) => {
-    try {
-        await db.query("SELECT 1");
-        res.json({ status: "ok", db: "up" });
-    } catch (err) {
-        res.status(500).json({ status: "error", db: "down" });
-    }
+const express = require('express');
+const router = express.Router();
+
+// GET /health
+router.get('/', (req, res) => {
+    res.json({
+        status: 'ok',
+        uptime: process.uptime()
+    });
 });
 
 module.exports = router;
