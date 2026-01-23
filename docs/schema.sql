@@ -32,3 +32,21 @@ CREATE TABLE order_items (
   qty INTEGER NOT NULL,
   price NUMERIC(8,2) NOT NULL
 );
+
+
+-- เมนูอาหาร
+CREATE TABLE IF NOT EXISTS menu_items (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  price NUMERIC(10,2) NOT NULL,
+  is_active BOOLEAN DEFAULT true
+);
+
+-- รายการอาหารในแต่ละ order
+CREATE TABLE IF NOT EXISTS order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  menu_item_id INTEGER NOT NULL REFERENCES menu_items(id),
+  quantity INTEGER NOT NULL,
+  price NUMERIC(10,2) NOT NULL
+);
