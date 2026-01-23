@@ -1,8 +1,17 @@
-const router = require("express").Router();
+/**
+ * health.js
+ * =========
+ * health check endpoint
+ * ใช้ตรวจว่า server ยังรันอยู่ไหม
+ */
 
-router.get("/", (req, res) => {
+const express = require('express');
+const router = express.Router();
+
+// GET /health
+router.get('/', (req, res) => {
     res.json({
-        status: "ok",
+        status: 'ok',
         uptime: process.uptime()
     });
 });
