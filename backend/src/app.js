@@ -1,25 +1,21 @@
-/**
- * app.js
- * ======
- * หน้าที่:
- * - สร้าง express app
- * - ต่อ middleware
- * - ต่อ route
- */
-
 const express = require('express');
 const app = express();
 
-// middleware: แปลง JSON body
 app.use(express.json());
 
-// import routes
 const healthRouter = require('./routes/health');
-const orderRouter = require('./routes/orders');
+const ordersRouter = require('./routes/orders');
+const orderItemsRouter = require('./routes/order-items');
 
-// mount routes
+console.log('🔥 APP.JS LOADED');
+
+// health
 app.use('/health', healthRouter);
-app.use('/orders', orderRouter);
 
-// export app ให้ server.js ใช้
+// orders
+app.use('/orders', ordersRouter);
+
+// order items (child of orders)
+app.use('/orders', orderItemsRouter);
+
 module.exports = app;
