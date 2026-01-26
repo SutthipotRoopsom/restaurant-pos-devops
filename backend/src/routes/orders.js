@@ -1,54 +1,65 @@
 /**
  * orders.js
  * =========
- * Order API (mock version)
- * ยังไม่ต่อ DB เพื่อให้ backend flow ทำงานก่อน
+ * Order API (Real Database Version)
  */
-
 const express = require('express');
 const router = express.Router();
+const pool = require('../db'); // <--- 🔑 พระเอกของเรา: เรียกใช้ Connection Pool
 
-// POST /orders
-router.post('/', (req, res) => {
+
+// POST /orders - เปิดโต๊ะ สร้างออเดอร์ใหม่
+router.post('/', async (req, res) => {  // <--- ⚠️ อย่าลืม async เพราะเราต้องรอ Database
     const { table_id } = req.body;
-
+    // 1. Validation: ตรวจสอบ input
     if (!table_id) {
-        return res.status(400).json({
-            error: 'table_id is required'
-        });
+        return res.status(400).json({ error: 'table_id is required' });
     }
-
-    // mock order
-    const order = {
-        order_id: Math.floor(Math.random() * 10000),
-        table_id,
-        status: 'OPEN',
-        created_at: new Date().toISOString()
-    };
-
-    res.status(201).json(order);
+    try {
+        // 2. Database Operation: ยิง SQL ใส่ Database
+        // $1 คือตัวแปรที่เราจะยัดใส่เข้าไป (ปลอดภัยจาก SQL Injection)
+        const result = await pool.query(
+            'INSERT INTO orders (table_id, status) VALUES ($1, $2) RETURNING *',
+            [table_id, 'open']
+        );
+        // result.rows คือ array ของข้อมูลที่ได้กลับมา (เราเอาตัวแรก [0])
+        const newOrder = result.rows[0];
+        // 3. Response: ส่งของกลับไปให้ลูกค้า
+        res.status(201).json(newOrder);
+    } catch (err) {
+        // 4. Error Handling: ถ้า Database พัง/มีปัญหา
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
-// POST /orders/:orderId/items
-router.post('/:id/items', (req, res) => {
-    const { id } = req.params;
+
+// POST /orders/:id/items - สั่งอาหาร
+router.post('/:id/items', async (req, res) => {
+    const order_id = req.params.id;
     const { menu_item_id, quantity } = req.body;
-
     if (!menu_item_id || !quantity) {
-        return res.status(400).json({
-            error: 'menu_item_id and quantity are required'
-        });
+        return res.status(400).json({ error: 'menu_item_id and quantity are required' });
     }
+    try {
+        // 1. หาข้อมูลเมนู + ราคา (Query ซ้อน)
+        const menuResult = await pool.query('SELECT price FROM menus WHERE id = $1', [menu_item_id]);
 
-    const orderItem = {
-        item_id: Math.floor(Math.random() * 100000),
-        order_id: parseInt(id),
-        menu_item_id,
-        quantity,
-        added_at: new Date().toISOString()
-    };
-
-    res.status(201).json(orderItem);
+        if (menuResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Menu item not found' });
+        }
+        const price = menuResult.rows[0].price;
+        // 2. Insert ลงตาราง order_items
+        const result = await pool.query(
+            `INSERT INTO order_items (order_id, menu_id, qty, price) 
+             VALUES ($1, $2, $3, $4) 
+             RETURNING *`,
+            [order_id, menu_item_id, quantity, price]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
-
 module.exports = router;
