@@ -8,6 +8,7 @@
  */
 
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
 
@@ -20,6 +21,7 @@ const orderRouter = require('./routes/orders');
 const tablesRouter = require('./routes/tables'); // <--- เพิ่มบรรทัดนี้! ✅
 const menusRouter = require('./routes/menus');
 // mount routes
+app.use(cors());
 app.use('/health', healthRouter);
 app.use('/orders', orderRouter);
 app.use('/tables', tablesRouter); // <--- เพิ่มบรรทัดนี้! ✅
