@@ -62,4 +62,41 @@ router.post('/:id/items', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+
+// POST /orders/:id/pay - ชำระเงิน (ต้องใช้ Transaction)
+router.post('/:id/pay', async (req, res) => {
+    const order_id = req.params.id;
+    const client = await pool.connect(); // <--- 1. ยืม Connection มาใช้เอง
+    try {
+        await client.query('BEGIN'); // <--- 2. เริ่ม Transaction
+        // 3. Update Order status -> 'paid'
+        const orderRes = await client.query(
+            `UPDATE orders SET status = 'paid', paid_at = NOW() 
+             WHERE id = $1 RETURNING *`,
+            [order_id]
+        );
+        if (orderRes.rows.length === 0) {
+            throw new Error('Order not found');
+        }
+        const order = orderRes.rows[0];
+        // 4. Update Table status -> 'available'
+        await client.query(
+            "UPDATE tables SET status = 'available' WHERE id = $1",
+            [order.table_id]
+        );
+        await client.query('COMMIT'); // <--- 5. สำเร็จ! ยืนยันข้อมูลทั้งหมด
+
+        res.json({
+            message: 'Payment successful',
+            order: order
+        });
+    } catch (err) {
+        await client.query('ROLLBACK'); // <--- 6. พัง! ยกเลิกทั้งหมด
+        console.error(err);
+        res.status(500).json({ error: err.message || 'Payment failed' });
+    } finally {
+        client.release(); // <--- 7. คืน Connection ให้ Pool
+    }
+});
 module.exports = router;
