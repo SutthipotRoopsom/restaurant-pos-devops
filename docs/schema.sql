@@ -22,7 +22,8 @@ CREATE TABLE orders (
   total_price NUMERIC(10,2) DEFAULT 0,
   payment_method VARCHAR(20),
   status VARCHAR(20) DEFAULT 'open',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  paid_at TIMESTAMP
 );
 
 CREATE TABLE order_items (
