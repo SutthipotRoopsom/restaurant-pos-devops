@@ -29,4 +29,26 @@ router.post('/', (req, res) => {
     res.status(201).json(order);
 });
 
+// POST /orders/:orderId/items
+router.post('/:id/items', (req, res) => {
+    const { id } = req.params;
+    const { menu_item_id, quantity } = req.body;
+
+    if (!menu_item_id || !quantity) {
+        return res.status(400).json({
+            error: 'menu_item_id and quantity are required'
+        });
+    }
+
+    const orderItem = {
+        item_id: Math.floor(Math.random() * 100000),
+        order_id: parseInt(id),
+        menu_item_id,
+        quantity,
+        added_at: new Date().toISOString()
+    };
+
+    res.status(201).json(orderItem);
+});
+
 module.exports = router;
