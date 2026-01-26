@@ -33,3 +33,4 @@ CREATE TABLE order_items (
   qty INTEGER NOT NULL,
   price NUMERIC(8,2) NOT NULL
 );
+
