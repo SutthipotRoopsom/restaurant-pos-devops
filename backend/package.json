@@ -6,8 +6,9 @@
   "scripts": {
     "test": "jest",
     "start": "node src/server.js",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint",
+    "lint:all": "eslint .",
+    "lint:fix": "eslint --fix",
     "format": "prettier --write ."
   },
   "keywords": [],
