@@ -99,4 +99,45 @@ router.post('/:id/pay', async (req, res) => {
         client.release(); // <--- 7. คืน Connection ให้ Pool
     }
 });
+
+router.get('/:orderId', async (req, res) => {
+    const { orderId } = req.params;
+
+    const order = await pool.query(
+        'SELECT * FROM orders WHERE id = $1',
+        [orderId]
+    );
+
+    if (order.rows.length === 0) {
+        return res.status(404).json({ error: 'Order not found' });
+    }
+
+    const items = await pool.query(
+        `
+    SELECT 
+      oi.menu_item_id,
+      m.name,
+      m.price,
+      oi.quantity,
+      (m.price * oi.quantity) AS total
+    FROM order_items oi
+    JOIN menu_items m ON m.id = oi.menu_item_id
+    WHERE oi.order_id = $1
+    `,
+        [orderId]
+    );
+
+    const grandTotal = items.rows.reduce(
+        (sum, item) => sum + Number(item.total),
+        0
+    );
+
+    res.json({
+        ...order.rows[0],
+        items: items.rows,
+        grand_total: grandTotal
+    });
+});
+
+
 module.exports = router;

@@ -1,0 +1,59 @@
+name: CI Pipeline (หุ่นยนต์ตรวจงาน)
+
+# 1. Triggers: บอกให้หุ่นยนต์เริ่มทำงานเมื่อไหร่
+# ในที่นี้คือ เมื่อมีการ push หรือ pull request ไปที่ branch 'main' หรือ 'develop'
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+# 2. Jobs: งานที่ต้องทำ (ทำคู่ขนานกันได้)
+jobs:
+  # งานที่ 1: ตรวจ Backend
+  backend-test:
+    runs-on: ubuntu-latest # ใช้เครื่อง Server OS Ubuntu
+    defaults:
+      run:
+        working-directory: ./backend # คำสั่งทั้งหมดจะรันในโฟลเดอร์ backend
+
+    steps:
+    - name: Checkout code (ดึงโค้ดมา)
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js (ลงโปรแกรม Node)
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+
+    - name: Install dependencies (ลง Library)
+      run: npm install
+
+    - name: Run Tests (สอบเก็บคะแนน)
+      run: npm test
+
+  # งานที่ 2: ตรวจ Frontend
+  frontend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run Tests
+      run: npm test
