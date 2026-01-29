@@ -10,10 +10,10 @@ const router = express.Router();
 
 // GET /health
 router.get('/', (req, res) => {
-    res.json({
-        status: 'ok',
-        uptime: process.uptime()
-    });
+  res.json({
+    status: 'ok',
+    uptime: process.uptime(),
+  });
 });
 
 module.exports = router;
