@@ -1,0 +1,22 @@
+{
+  "name": "restaurant-pos-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root package to manage DevOps tools for the monorepo",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3"
+  },
+  "lint-staged": {
+    "backend/**/*.js": [
+      "npm run lint --prefix backend --",
+      "npm run lint:fix --prefix backend --"
+    ],
+    "frontend/**/*.{js,jsx}": [
+      "cd frontend && npm run lint"
+    ]
+  }
+}
